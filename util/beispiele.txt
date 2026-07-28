@@ -1,0 +1,19 @@
+X:1
+L:1/8
+M:6/8
+K:D
+|: A | f>ga gfe | Ace A2 A | cBA B>GA | f>ea a>ga | f<fe/f/g e2 a | fef g/f/ef | ddd d3 ::[K:Dmix] cde fed | A3 cAe | eAA Age | d3 dAc | 
+ def gec | dcd GdB |1 AED DFA :|2 A4 ||
+
+X:1
+L:1/8
+M:6/8
+K:D
+ g2 a fed | Aaa a^ga | fed f2 e | fdf edB | dAG FED | AFD DFA |1 fAB d3 | f2 d e2 g | fed fed | fdB gec | dBG F2 A :|2 def gdB | 
+ ABA FDF GEA || dBB fBB | fBd Bdg | fdB BAF | EFE EFA | FGE EFG ||
+
+X:1
+L:1/8
+M:6/8
+K:D
+ F | ADF FDF | G D2 EDC | DFE{F} ABA | dcA BGE | FDF Adf | e2 c CFB, | CEE Acd | edc BED | D2 ^G A3 |]

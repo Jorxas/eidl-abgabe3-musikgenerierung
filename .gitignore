@@ -1,0 +1,41 @@
+# Jupyter
+.ipynb_checkpoints/
+
+# Python
+__pycache__/
+*.pyc
+
+# wandb: lokaler Cache der Trainingslaeufe (Logs, Binaerdateien).
+# Die eigentlichen Runs liegen schon auf wandb.ai, muss nicht mit ins Repo.
+wandb/
+
+# Trainierte Modellgewichte: gross und durch einmaliges Ausfuehren
+# des Notebooks jederzeit neu erzeugbar.
+*.pt
+*.pth
+
+# Generiertes Audio: ebenfalls nur ein Nebenprodukt des Notebooks.
+*.wav
+
+# Backup-Datei, kein Teil der Abgabe.
+*.bak
+
+# Nur ein Zwischenschritt beim Bau des One-Pagers (siehe erstelle_onepager.py),
+# das eigentliche Ergebnis ist onepager_ubung03.pdf.
+util/onepager_ubung03.html
+
+# Vorlesungsfolien und Aufgabenblatt des Kurses: nicht unsere eigene Arbeit
+# und nicht Teil dieser Abgabe, deshalb nicht im Repo.
+util/07_EiDL_RL_Dumschat_Schauer.pdf
+util/08_EiDL_Ghobadi_Schauer_RNN.pdf
+util/09_EiDL_Ghobadi_Schauer_Language.pdf
+util/10_EiDL_Ghobadi_Schauer_Attention.pdf
+util/uebungsblatt_03 (1).pdf
+EiDL_CNN_Uebungen.pdf
+EiDL_Gradientenabstieg_Uebungen.pdf
+EiDL_Trainingsschleife_Backprop_Uebungen.pdf
+
+# Betriebssystem-Muell
+Thumbs.db
+desktop.ini
+.DS_Store
