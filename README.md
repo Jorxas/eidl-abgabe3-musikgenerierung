@@ -1,69 +1,37 @@
-# Musikgenerierung mit RNNs
+# Irische Melodien mit LSTM und GRU generieren
 
-Abgabe 3 aus dem Kurs "Einführung in Deep Learning" (SoSe26). Wir – Jordan Pokem und Leslie Tsafack – haben ein LSTM (und zum Vergleich ein GRU) trainiert, das irische Volksmusik lernt und danach selbst neue Melodien schreibt.
+Dieses Projekt entstand gemeinsam mit Leslie Tsafack im Kurs *Einführung in Deep Learning* (THM, Sommersemester 2026). Wir wollten herausfinden, ob ein Modell die Struktur irischer Volksmelodien lernen und eigene Stücke in **ABC-Notation** erzeugen kann.
 
-Die Grundidee dahinter, die uns beim Bearbeiten selbst erst richtig klar wurde: Musik in ABC-Notation ist einfach nur Text. Damit wird "Musik komponieren" zu einem ganz normalen Sprachmodellierungs-Problem, wie wir es aus der Vorlesung zu RNNs und Sprache kannten – das Netz lernt Zeichen für Zeichen, welches Zeichen als nächstes kommt.
+ABC-Notation beschreibt Musik als Text. Wir konnten die Aufgabe deshalb als Zeichenfolge behandeln: Ein Tokenizer wandelt Zeichen in IDs um, ein LSTM oder GRU sagt das nächste Zeichen voraus, und beim Generieren wird wiederholt aus der Vorhersage gesampelt.
 
-## Worum geht's
+## Was wir umgesetzt haben
 
-Datensatz ist [IrishMAN](https://huggingface.co/datasets/sander-wood/irishman), eine Sammlung irischer Volkslieder in ABC-Notation (das ist ein Textformat für Musik, ungefähr so: `X:1 L:1/8 M:6/8 K:D |: A | f>ga gfe | ...`). Wir haben daraus:
+- Zeichen-Tokenizer sowie Training und Vergleich eines LSTM und eines GRU in PyTorch.
+- Experiment-Tracking mit Weights & Biases und Auswertung von Loss sowie Top-1- und Top-5-Accuracy.
+- Generierung neuer ABC-Stücke per Sampling, ein einfacher Syntax-Check und eine WAV-Ausgabe mit Sinustönen.
 
-1. einen Zeichen-Tokenizer gebaut (Text zu Zahlen-IDs und zurück)
-2. ein Modell aus Embedding, LSTM (bzw. GRU) und einer linearen Ausgabeschicht trainiert, das jeweils das nächste Zeichen vorhersagt
-3. das Training mit wandb geloggt (Loss, Top-1- und Top-5-Accuracy)
-4. das Modell danach Zeichen für Zeichen neue Stücke schreiben lassen (Sampling aus der Softmax-Verteilung, nicht einfach das wahrscheinlichste Zeichen – sonst wiederholt sich alles sehr schnell)
+Der Datensatz ist [IrishMAN](https://huggingface.co/datasets/sander-wood/irishman). Im dokumentierten Lauf nutzten wir 8.000 Stücke, Sequenzen mit 100 Zeichen und 10 Epochen.
 
-Dazu noch drei Bonusaufgaben: ein Vergleich LSTM gegen GRU, ein kleiner Regel-Check, ob die generierten Stücke überhaupt gültige ABC-Syntax haben, und eine Funktion, die ein generiertes Stück als Sinuston-WAV hörbar macht.
+| Modell | Test-Loss | Top-1 | Top-5 |
+| --- | ---: | ---: | ---: |
+| LSTM | 1,08 | 67,6 % | 93,4 % |
+| GRU | 1,06 | 68,5 % | 93,6 % |
 
-## Ergebnisse
+Das GRU lag in diesem Lauf knapp vorn. Der Unterschied ist zu klein, um daraus ohne wiederholte Läufe mit verschiedenen Seeds eine allgemeine Überlegenheit abzuleiten. Die generierten Beispiele bestanden unseren einfachen ABC-Syntax-Check, klingen aber noch nicht wie sorgfältig komponierte Melodien. Die größte praktische Abwägung war Datenmenge gegen Trainingszeit; beim Generieren verhinderte Sampling außerdem viele Wiederholungen, die mit einer reinen Argmax-Auswahl auftraten.
 
-Test-Set nach 10 Epochen, 8000 Stücke aus dem Datensatz, `hidden_size=256`, `seq_len=100`:
+## Im Repository
 
-| Modell | Test-Loss | Top-1-Accuracy | Top-5-Accuracy |
-|--------|-----------|-----------------|-----------------|
-| LSTM   | 1,08      | 67,6 %          | 93,4 %          |
-| GRU    | 1,06      | 68,5 %          | 93,6 %          |
+- [`ubung03.ipynb`](ubung03.ipynb) — Daten, Modelle, Training, Evaluation und Generierung.
+- [`util/ergebnisse.json`](util/ergebnisse.json) und [`util/beispiele.txt`](util/beispiele.txt) — Metriken und erzeugte Beispiele.
+- [`util/`](util/) — Diagramme und Skripte für One-Pager und Präsentation.
+- [`onepager_ubung03.pdf`](onepager_ubung03.pdf) — einseitige Projektzusammenfassung.
 
-Zum Einordnen: reines Raten läge bei einer Vokabulargröße von 92 Zeichen bei ungefähr 1 %. Das GRU war in unseren Läufen minimal besser und gleichzeitig etwas schneller trainiert – bei so kleinen Unterschieden würde man das aber nicht überbewerten, dafür müsste man mehrmals mit unterschiedlichen Seeds trainieren.
+## Nachvollziehen
 
-Die generierten Stücke haben in unserem Validity-Check (Kopfzeilen, Tonart, genug Taktstriche, Noten vorhanden, sauberes Ende) durchgehend alle Regeln erfüllt. Klingen tut es trotzdem eher nach "irisch angehauchtes Zufallsstück" als nach einer richtigen Melodie – wofür 10 Epochen auf einem Teil des Datensatzes auch ehrlich gesagt nicht reichen.
-
-Die vollständigen Trainingskurven liegen in wandb (Projekt `eidl-thm/4.block_Jordan_Pokem_Leslie_Tsafack_RNN`), statische Versionen davon liegen als PNG in [util/](util/).
-
-## Womit wir zu kämpfen hatten
-
-Der größte Hebel war die Abwägung zwischen Datenmenge und Trainingszeit (steuerbar über `NUM_TUNES` und die Schrittweite des gleitenden Fensters) – mit mehr Daten und mehr Epochen wird es sicher deutlich besser, dauert auf der CPU aber auch entsprechend länger. Und Sampling statt Argmax bei der Generierung war wichtiger als gedacht: mit Argmax bleibt das Modell schnell in Wiederholungen hängen.
-
-## Aufbau des Repos
-
-```
-ubung03.ipynb          Hauptnotebook: Daten, Modell, Training, Evaluation, Generierung, Bonusaufgaben
-onepager_ubung03.pdf    Ein-Seiten-Zusammenfassung für die Abgabe
-util/
-  erstelle_onepager.py       baut den One-Pager aus ergebnisse.json + beispiele.txt + den PNGs
-  erstelle_praesentation.py  baut die PowerPoint-Präsentation
-  notizen_hinzufuegen.py     ergänzt die Referentennotizen in der Präsentation
-  ergebnisse.json             alle Metriken und die Konfiguration aus dem Notebook-Lauf
-  beispiele.txt                die generierten Musikstücke als Text
-  kurven_loss.png, kurven_accuracy.png, vergleich_lstm_gru.png   Plots aus dem Notebook
-  praesentation_ubung03.pptx, praesentation_ubung03_MIT_NOTIZEN.pptx
-```
-
-Trainierte Modellgewichte, die generierte WAV-Datei, der lokale wandb-Cache sowie die Vorlesungsfolien und das Aufgabenblatt des Kurses sind bewusst nicht im Repo (siehe [.gitignore](.gitignore)) – die Gewichte und die Audiodatei lassen sich mit dem Notebook jederzeit neu erzeugen, und die Kursunterlagen sind nicht unsere eigene Arbeit.
-
-## Selbst ausführen
+Installiere Python sowie die im Notebook verwendeten Pakete:
 
 ```bash
 pip install torch datasets wandb python-pptx numpy matplotlib
 ```
 
-Danach `ubung03.ipynb` von oben nach unten durchlaufen lassen. Für das wandb-Logging braucht man einen (kostenlosen) Account und `wandb login` einmal in der Umgebung – ohne Account bricht die Zelle mit der `wandb.init()`-Aufruf ab, der Rest des Notebooks funktioniert aber unabhängig davon.
-
-Wenn das Notebook einmal komplett durchgelaufen ist, liegen `ergebnisse.json`, `beispiele.txt` und die PNGs im Arbeitsverzeichnis, und man kann aus `util/` heraus noch
-
-```bash
-python erstelle_onepager.py
-python erstelle_praesentation.py
-```
-
-laufen lassen, um den One-Pager bzw. die Präsentation neu zu bauen.
+Öffne anschließend `ubung03.ipynb` und führe die Zellen der Reihe nach aus. Für das Experiment-Tracking ist ein Weights-&-Biases-Konto mit `wandb login` erforderlich. Modellgewichte, generierte WAV-Dateien und Kursunterlagen sind nicht Teil des Repositorys; der Lauf kann sie lokal erzeugen.
